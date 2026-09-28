@@ -1,6 +1,6 @@
 from django.db import models
 
-from src.core.models.core_enums import Units
+from core.models.core_enums import Units
 
 class Ingredient(models.Model):
     UNITS = [(unit.name, unit.value) for unit in Units]

@@ -1,8 +1,6 @@
 from django.db import models
 
-from src.users.models.generic_user_model import User
-
-class Clients(models.Model):
+class Client(models.Model):
     phone = models.CharField(max_length=50,null=False)
 
-    user = models.OneToOneField(to=User, on_delete=models.CASCADE)
+    user = models.OneToOneField(to="users.User", on_delete=models.CASCADE)

@@ -1,7 +1,6 @@
 from django.db import models
 
-from src.users.models.auth_enums import Roles
-from src.users.models.generic_user_model import User
+from users.models.user_enums import Roles
 
 class Employee(models.Model):
     ROLES = [(role.name, role.value) for role in Roles]
@@ -9,4 +8,4 @@ class Employee(models.Model):
     cpf = models.CharField(max_length=50, null=False)
     role = models.CharField(max_length=50, choices=ROLES, null=False)
 
-    user = models.OneToOneField(to=User, on_delete=models.CASCADE)
+    user = models.OneToOneField(to="users.User", on_delete=models.CASCADE)

@@ -1,12 +1,9 @@
 from django.db import models
 from django.db.models.functions import Now
 
-from src.users.models.client_model import Client
-from src.users.models.employee_model import Employee
-from src.core.models.core_enums import OrderStatus, OrderCategories
-from src.core.models.product_model import Product
-from src.core.models.coupom_model import Coupom
-from src.core.models.products_orders_model import ProductsOrders
+from core.models.products_orders_model import ProductsOrders
+from core.models.core_enums import OrderCategories, OrderStatus
+
 
 class Order(models.Model):
     STATUS = [(status.name, status.value) for status in OrderStatus]
@@ -20,8 +17,8 @@ class Order(models.Model):
     cover = models.PositiveIntegerField(null=True)
     notes = models.CharField(max_length=255, null=True)
 
-    client_id = models.ForeignKey(to=Client, on_delete=models.CASCADE, null=True)
-    employee_id = models.ForeignKey(to=Employee, on_delete=models.CASCADE, null=True)
+    client = models.ForeignKey(to="users.Client", on_delete=models.CASCADE, null=True)
+    employee = models.ForeignKey(to="users.Employee", on_delete=models.CASCADE, null=True)
 
-    products = models.ManyToManyField(to=Product, through=ProductsOrders, null=True)
-    coupoms = models.ManyToManyField(to=Coupom, null=True)
+    products = models.ManyToManyField(to="core.Product", through=ProductsOrders, blank=True)
+    coupoms = models.ManyToManyField(to="core.Coupom", blank=True)
