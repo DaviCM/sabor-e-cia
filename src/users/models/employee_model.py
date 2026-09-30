@@ -8,4 +8,4 @@ class Employee(models.Model):
     cpf = models.CharField(max_length=50, null=False)
     role = models.CharField(max_length=50, choices=ROLES, null=False)
 
-    user = models.OneToOneField(to="users.User", on_delete=models.CASCADE)
+    user = models.OneToOneField(to="users.User", on_delete=models.CASCADE, null=False)
