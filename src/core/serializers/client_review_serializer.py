@@ -13,6 +13,7 @@ class CreateClientReviewSerializer(se.Serializer):
 
 
 class UpdateClientReviewSerializer(se.Serializer):
+    id = se.IntegerField()
     score = se.IntegerField(allow_null=True)
     notes = se.CharField(max_length=255, allow_null=True)
 

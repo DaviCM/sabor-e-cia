@@ -6,3 +6,5 @@ class Coupom(models.Model):
     multiplier = models.DecimalField(null=False)
     created_at = models.DateTimeField(db_default=Now(), null=False)
     expires_at = models.DateTimeField(null=False)
+
+    products = models.ManyToManyField(to="core.Product", blank=True)

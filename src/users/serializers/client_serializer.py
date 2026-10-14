@@ -12,6 +12,7 @@ class CreateClientSerializer(se.Serializer):
 
 
 class UpdateClientSerializer(se.Serializer):
+    id = se.IntegerField()
     first_name = se.CharField(max_length=120, allow_null=True)
     last_name = se.CharField(max_length=120, allow_null=True)
     username = se.CharField(max_length=120, allow_null=True)

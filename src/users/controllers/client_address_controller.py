@@ -30,8 +30,15 @@ def list_client_addresses(current_client: Client):
     if current_client == None:
         raise UserNotFoundError
 
+    addresses = ClientAddress.objects.filter(client=current_client)
 
-def update_client_address(current_client: Client, target_address_id: int, params: UpdateAddressSerializer) -> ClientAddress:
+    if addresses.exists() == True:
+        return addresses
+    else:
+        raise AddressNotFoundError
+
+
+def update_client_address(current_client: Client, params: UpdateAddressSerializer) -> ClientAddress:
     if current_client == None:
         raise UserNotFoundError
     
@@ -41,7 +48,7 @@ def update_client_address(current_client: Client, target_address_id: int, params
     if params.number <= 0:
         raise InvalidNumberError
     
-    target_address: ClientAddress = ClientAddress.objects.filter(pk=target_address_id)
+    target_address: ClientAddress = ClientAddress.objects.filter(pk=params.id)
     
     if params.cep != None:
         target_address.cep = params.cep

@@ -1,4 +1,4 @@
-from users.models import User, Client, Employee
+from users.models import User, Employee
 
 def email_already_exists(email: str):
     target_email = User.objects.filter(email=email)

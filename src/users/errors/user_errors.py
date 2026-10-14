@@ -48,3 +48,10 @@ class UserNotFoundError(AppError):
     status_code = status.HTTP_404_NOT_FOUND
     error = "USER_NOT_FOUND"
     detail = "The requested user could not be found. Please, try again."
+
+
+
+class UserHasNoPermissionError(AppError):
+    status_code = status.HTTP_401_UNAUTHORIZED
+    error = "USER_HAS_NO_PERMISSION"
+    detail = "The requested operation cannot be performed by this user. Please, try again with the correct permissions."

@@ -1,8 +1,8 @@
 from brutils import is_valid_email, is_valid_phone
 
-from users.models import User, Client, ClientAddress
+from users.models import User, Client
 from users.controllers import email_already_exists
-from users.serializers import CreateClientSerializer, UpdateClientSerializer, CreateAddressSerializer, UpdateAddressSerializer
+from users.serializers import CreateClientSerializer, UpdateClientSerializer
 from users.errors import *
 
 def create_client(params: CreateClientSerializer) -> Client:

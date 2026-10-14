@@ -14,6 +14,7 @@ class CreateIngredientSerializer(se.Serializer):
 
 
 class UpdateIngredientSerializer(se.Serializer):
+    id = se.IntegerField()
     description = se.CharField(max_length=120, allow_null=True)
     quantity = se.IntegerField(allow_null=True)
     unit = se.ChoiceField(choices=UNITS, allow_null=True)

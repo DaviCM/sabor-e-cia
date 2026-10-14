@@ -9,4 +9,4 @@ class Product(models.Model):
     category = models.CharField(max_length=50, choices=CATEGORIES, null=False)
     value = models.DecimalField(null=False)
     
-    coupoms = models.ManyToManyField(to="core.Coupom", blank=True)
+    

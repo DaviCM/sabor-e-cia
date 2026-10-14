@@ -4,7 +4,7 @@ class CreateCoupomSchema(se.Serializer):
     id = se.IntegerField(read_only=True)
     token = se.CharField(max_length=50)
     multiplier = se.DecimalField()
-    created_at = se.DateTimeField(read_only=True)
+    created_at = se.DateTimeField(allow_null=True)
     expires_at = se.DateTimeField()
 
 

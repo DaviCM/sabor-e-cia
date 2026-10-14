@@ -40,6 +40,14 @@ def create_employee(params: CreateEmployeeSerializer) -> Employee:
 def update_employee(current_employee: Employee, params: UpdateEmployeeSerializer) -> Employee:
     if current_employee == None:
         raise UserNotFoundError
+
+    target_employee = Employee.objects.filter(pk=params.id)
+
+    if target_employee == None:
+        raise UserNotFoundError
+    
+    if current_employee.user.is_admin == False:
+        raise UserHasNoPermissionError
     
     if (params.email != None) and (is_valid_email(email=params.email) == False):
         raise InvalidEmailError
@@ -55,39 +63,42 @@ def update_employee(current_employee: Employee, params: UpdateEmployeeSerializer
     
     if (params.role != None) and (params.role not in Roles):
         raise InvalidRoleError
-    
-    current_user: User = current_employee.user
+
+    target_user = target_employee.user
     
     if params.first_name != None:
-        current_user.first_name = params.first_name
+        target_user.first_name = params.first_name
         
     if params.last_name != None:
-        current_user.last_name = params.last_name
+        target_user.last_name = params.last_name
         
     if params.username != None:
-        current_user.username = params.username
+        target_user.username = params.username
             
     if params.email != None:
-        current_user.email = params.email
+        target_user.email = params.email
         
     if params.password != None:
-        current_user.set_password(params.password)
+        target_user.set_password(params.password)
         
     if params.cpf != None:
-        current_employee.cpf = params.cpf
+        target_user.cpf = params.cpf
         
     if params.role != None:
-        current_employee.role = params.role
+        target_employee.role = params.role
         
-    current_user.save()
-    current_employee.save()
+    target_user.save()
+    target_employee.save()
     
-    return current_employee
+    return target_employee
             
 
 def delete_employee(current_employee: Employee):
     if current_employee == None:
         raise UserNotFoundError
+
+    if current_employee.user.is_admin == False:
+        raise UserHasNoPermissionError
     
     current_user: User = current_employee.user
     current_user.delete()

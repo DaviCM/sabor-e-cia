@@ -9,6 +9,7 @@ class CreateAddressSerializer(se.Serializer):
 
 
 class UpdateAddressSerializer(se.Serializer):
+    id = se.IntegerField()
     cep = se.CharField(max_length=50, allow_null=True)
     description = se.CharField(max_length=120, allow_null=True)
     number = se.IntegerField(allow_null=True)
