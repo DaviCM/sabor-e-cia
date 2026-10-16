@@ -2,7 +2,7 @@ from rest_framework import serializers as se
 
 from users.models import Roles
 
-ROLES = [(role.name, role.value) for role in Roles]
+ROLES = [(role.value, role.name) for role in Roles]
 
 class ResponseEmployeeLogSerializer(se.Serializer):
     id = se.IntegerField(read_only=True)

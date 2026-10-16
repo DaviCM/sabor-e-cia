@@ -1,6 +1,6 @@
-from core.models import Product, Coupom
+from core.models import Product
 from core.serializers import CreateProductSerializer, UpdateProductSerializer, QueryProductSerializer
-from core.errors import InvalidValueError, ProductNotFoundError
+from core.errors import InvalidValueError, ProductNotFoundError, InvalidQueryError
 from users.models import Employee, User
 from users.errors import UserNotFoundError, UserHasNoPermissionError
 
@@ -8,7 +8,7 @@ def create_product(current_employee: Employee, params: CreateProductSerializer) 
     if current_employee == None:
         raise UserNotFoundError
 
-    if current_employee.user.is_admin == False:
+    if current_employee.user.is_staff == False:
         raise UserHasNoPermissionError
 
     if params.value < 0:
@@ -28,6 +28,9 @@ def create_product(current_employee: Employee, params: CreateProductSerializer) 
 def list_products(current_user: User, params: QueryProductSerializer):
     if current_user == None:
         raise UserNotFoundError
+
+    if params.minimum_value > params.maximum_value:
+        raise InvalidValueError
 
     products = Product.objects.all()
 
@@ -53,7 +56,7 @@ def update_product(current_employee: Employee, params: UpdateProductSerializer) 
     if current_employee == None:
         raise UserNotFoundError
 
-    if current_employee.user.is_admin == False:
+    if current_employee.user.is_staff == False:
         raise UserHasNoPermissionError
 
     target_product = Product.objects.filter(pk=params.id)
@@ -78,9 +81,12 @@ def update_product(current_employee: Employee, params: UpdateProductSerializer) 
     return target_product
 
 
-def delete_product(current_employee: Employee, target_prouct_id: int):
+def delete_product(current_employee: Employee, target_prouct_id: int) -> None:
     if current_employee == None:
         raise UserNotFoundError
+
+    if current_employee.user.is_staff == False:
+        raise UserHasNoPermissionError
     
     target_product = Product.objects.filter(pk=target_prouct_id)
 

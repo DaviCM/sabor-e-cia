@@ -26,6 +26,7 @@ def create_employee(params: CreateEmployeeSerializer) -> Employee:
             extra_fields={
                 "first_name": params.first_name,
                 "last_name": params.last_name,
+                "is_staff": True,
             },
         ),
         cpf=params.cpf,
@@ -40,6 +41,9 @@ def create_employee(params: CreateEmployeeSerializer) -> Employee:
 def update_employee(current_employee: Employee, params: UpdateEmployeeSerializer) -> Employee:
     if current_employee == None:
         raise UserNotFoundError
+
+    if current_employee.user.is_staff == False:
+        raise UserHasNoPermissionError
 
     target_employee = Employee.objects.filter(pk=params.id)
 
@@ -93,11 +97,11 @@ def update_employee(current_employee: Employee, params: UpdateEmployeeSerializer
     return target_employee
             
 
-def delete_employee(current_employee: Employee):
+def delete_employee(current_employee: Employee) -> None:
     if current_employee == None:
         raise UserNotFoundError
 
-    if current_employee.user.is_admin == False:
+    if current_employee.user.is_staff == False:
         raise UserHasNoPermissionError
     
     current_user: User = current_employee.user

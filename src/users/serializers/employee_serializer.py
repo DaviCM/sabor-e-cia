@@ -15,7 +15,7 @@ class CreateEmployeeSerializer(se.Serializer):
 
 
 class UpdateEmployeeSerializer(se.Serializer):
-    ROLES = [(role.name, role.value) for role in Roles]
+    ROLES = [(role.value, role.name) for role in Roles]
 
     id = se.IntegerField()
     first_name = se.CharField(max_length=120, allow_null=True)

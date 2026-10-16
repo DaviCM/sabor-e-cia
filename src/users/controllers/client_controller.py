@@ -23,6 +23,7 @@ def create_client(params: CreateClientSerializer) -> Client:
             extra_fields={
                 "first_name": params.first_name,
                 "last_name": params.last_name,
+                "is_staff": False,
             },
         ),
         phone=params.phone,
@@ -72,7 +73,7 @@ def update_client(current_client: Client, params: UpdateClientSerializer) -> Cli
     return current_client
             
 
-def delete_client(current_client: Client):
+def delete_client(current_client: Client) -> None:
     if current_client == None:
         raise UserNotFoundError
     

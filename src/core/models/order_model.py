@@ -6,8 +6,8 @@ from core.models.core_enums import OrderCategories, OrderStatus
 
 
 class Order(models.Model):
-    STATUS = [(status.name, status.value) for status in OrderStatus]
-    CATEGORIES = [(category.name, category.value) for category in OrderCategories]
+    STATUS = [(status.value, status.name) for status in OrderStatus]
+    CATEGORIES = [(category.value, category.name) for category in OrderCategories]
 
     datetime = models.DateTimeField(db_default=Now(), null=False)
     quantity = models.PositiveIntegerField(null=False)

@@ -2,9 +2,9 @@ from rest_framework import serializers as se
 
 from core.models import OrderStatus, OrderCategories, ProductTypes
 
-STATUS = [(status.name, status.value) for status in OrderStatus]
-CATEGORIES = [(category.name, category.value) for category in OrderCategories]
-TYPES = [(type.name, type.value) for type in ProductTypes]
+STATUS = [(status.value, status.name) for status in OrderStatus]
+CATEGORIES = [(category.value, category.name) for category in OrderCategories]
+TYPES = [(type.value, type.name) for type in ProductTypes]
 
 class CreateOrderSerializer(se.Serializer):
     id = se.IntegerField(read_only=True)
@@ -19,8 +19,8 @@ class CreateOrderSerializer(se.Serializer):
     client_id = se.IntegerField()
     employee_id = se.IntegerField()
 
-    product_ids = se.ListField(child=se.IntegerField())
-    coupom_ids = se.ListField(child=se.IntegerField(allow_null=True))
+    products = se.ListField(child=se.IntegerField())
+    coupoms = se.ListField(child=se.IntegerField(allow_null=True))
 
 
 
@@ -39,7 +39,7 @@ class QueryOrderSerializer(se.Serializer):
     client_id = se.IntegerField(allow_null=True)
     employee_id = se.IntegerField(allow_null=True)
 
-    product_ids = se.ListField(child=se.IntegerField(allow_null=True), allow_null=True)
+    products = se.ListField(child=se.IntegerField(allow_null=True), allow_null=True)
     product_types = se.ListField(child=se.ChoiceField(choices=TYPES, allow_null=True), allow_null=True)
 
-    coupom_ids = se.ListField(child=se.IntegerField(allow_null=True), allow_null=True)
+    coupoms = se.ListField(child=se.IntegerField(allow_null=True), allow_null=True)

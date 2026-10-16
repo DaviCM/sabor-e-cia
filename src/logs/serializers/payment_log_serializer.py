@@ -2,7 +2,7 @@ from rest_framework import serializers as se
 
 from logs.models import PaymentMethods
 
-METHODS = [(method.name, method.value) for method in PaymentMethods]
+METHODS = [(method.value, method.name) for method in PaymentMethods]
 
 class ResponsePaymentLogSerializer(se.Serializer):
     id = se.IntegerField(read_only=True)

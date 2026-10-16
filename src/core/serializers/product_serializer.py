@@ -2,7 +2,7 @@ from rest_framework import serializers as se
 
 from core.models import ProductCategories
 
-CATEGORIES = [(category.name, category.value) for category in ProductCategories]
+CATEGORIES = [(category.value, category.name) for category in ProductCategories]
 
 class CreateProductSerializer(se.Serializer):
 
@@ -14,7 +14,7 @@ class CreateProductSerializer(se.Serializer):
 
 
 class UpdateProductSerializer(se.Serializer):
-    id = se.IntegerField(read_only=True, allow_null=True)
+    id = se.IntegerField()
     description = se.CharField(max_length=120, allow_null=True)
     category = se.ChoiceField(choices=CATEGORIES, allow_null=True)
     value = se.DecimalField(allow_null=True)

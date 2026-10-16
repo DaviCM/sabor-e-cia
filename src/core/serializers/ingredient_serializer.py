@@ -2,7 +2,7 @@ from rest_framework import serializers as se
 
 from core.models import Units
 
-UNITS = [(unit.name, unit.value) for unit in Units]
+UNITS = [(unit.value, unit.name) for unit in Units]
 
 class CreateIngredientSerializer(se.Serializer):
     id = se.IntegerField(read_only=True)

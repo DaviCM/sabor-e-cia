@@ -64,7 +64,7 @@ def update_client_address(current_client: Client, params: UpdateAddressSerialize
     return target_address
 
 
-def delete_client_address(current_client: Client, target_address_id: int):
+def delete_client_address(current_client: Client, target_address_id: int) -> None:
     if current_client == None:
         raise UserNotFoundError
     
