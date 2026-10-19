@@ -46,7 +46,7 @@ def list_products(current_user: User, params: QueryProductSerializer):
     if params.maximum_value != None:
         products = products.filter(value__lte=params.maximum_value)
 
-    if products == None:
+    if products.exists() == False:
         raise ProductNotFoundError
 
     return products
@@ -61,7 +61,7 @@ def update_product(current_employee: Employee, params: UpdateProductSerializer) 
 
     target_product = Product.objects.filter(pk=params.id)
 
-    if target_product == None:
+    if target_product.exists() == False:
         raise ProductNotFoundError
 
     if (params.value != None) and (params.value < 0):
@@ -90,7 +90,7 @@ def delete_product(current_employee: Employee, target_prouct_id: int) -> None:
     
     target_product = Product.objects.filter(pk=target_prouct_id)
 
-    if target_product == None:
+    if target_product.exists() == False:
         raise ProductNotFoundError
 
     target_product.delete()

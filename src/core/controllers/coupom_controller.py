@@ -1,7 +1,7 @@
-from core.models import Coupom, Product
+from core.models import Coupom
 from core.serializers import CreateCoupomSerializer, UpdateCoupomSerializer, QueryCoupomSerializer
 from core.errors import InvalidMultiplierError, InvalidDateError, CoupomNotFoundError
-from users.models import Employee, User
+from users.models import Employee
 from users.errors import UserNotFoundError, UserHasNoPermissionError
 
 def create_coupom(current_employee: Employee, params: CreateCoupomSerializer) -> Coupom:
@@ -14,17 +14,18 @@ def create_coupom(current_employee: Employee, params: CreateCoupomSerializer) ->
     if params.multiplier < 1:
         raise InvalidMultiplierError
 
-    if params.expires_at >= params.created_at:
-        raise InvalidDateError
-
     new_coupom = Coupom(
         token=params.token,
         multiplier=params.multiplier,
-        created_at=params.created_at,
         expires_at=params.expires_at,
     )
 
     new_coupom.save()
+
+    if params.products != None:
+        for product in params.products:
+            # add() adiciona uma entrada, nesse caso via PK, a um relacionamento many-to-many.
+            new_coupom.products.add(product)
 
     return new_coupom
 
@@ -42,6 +43,14 @@ def list_coupoms(current_employee: Employee, params: QueryCoupomSerializer):
     if (params.maximum_multiplier != None) and (params.maximum_multiplier < 1):
         raise InvalidMultiplierError
 
+    if (params.created_before != None) and (params.created_after != None):
+        if params.created_after < params.created_before:
+            raise InvalidDateError
+            
+    if (params.expires_before != None) and (params.expires_after != None):
+        if params.expires_after < params.expires_before:
+            raise InvalidDateError
+    
     coupoms = Coupom.objects.all()
 
     if params.token != None:
@@ -53,16 +62,25 @@ def list_coupoms(current_employee: Employee, params: QueryCoupomSerializer):
     if params.maximum_multiplier != None:
         coupoms = coupoms.filter(multiplier__lte=params.maximum_multiplier)
 
-    # ! FINALIZAR AS VERIFICAÇÕES PARA O SERIALIZADOR
+    if params.created_before != None:
+        coupoms = coupoms.filter(created_at__gte=params.created_before)
 
-    if params.created_after < params.created_before:
-        raise InvalidDateError
+    if params.created_after != None:
+        coupoms = coupoms.filter(created_at__lte=params.created_after)
 
-    if params.expires_after < params.expires_before:
-        raise InvalidDateError
+    if params.expires_before != None:
+        coupoms = coupoms.filter(expires_at__gte=params.expires_before)
 
+    if params.expires_after != None:
+        coupoms = coupoms.filter(expires_at__lte=params.expires_after)
 
+    if params.product_id != None:
+        coupoms = coupoms.filter(products__pk=params.product_id)
 
+    if coupoms.exists() == False:
+        raise CoupomNotFoundError
+    
+    return coupoms
 
 
 def update_coupom(current_employee: Employee, params: UpdateCoupomSerializer) -> Coupom:
@@ -72,10 +90,46 @@ def update_coupom(current_employee: Employee, params: UpdateCoupomSerializer) ->
     if current_employee.user.is_staff == False:
         raise UserHasNoPermissionError
 
+    if (params.multiplier != None) and (params.multiplier < 1):
+        raise InvalidMultiplierError
 
-def delete_coupom(current_employee: Employee, params: CreateCoupomSerializer) -> None:
+    target_coupom = Coupom.objects.filter(pk=params.id)
+
+    if target_coupom.exists == False:
+        raise CoupomNotFoundError
+
+    if (params.expires_at != None) and (target_coupom.created_at >= params.expires_at):
+        raise InvalidDateError
+    
+    if params.token != None:
+        target_coupom.token = params.token
+
+    if params.multiplier != None:
+        target_coupom.multiplier = params.multiplier
+
+    if params.expires_at != None:
+        target_coupom.expires_at = params.expires_at
+
+    if params.products != None:
+        for product in params.products:
+            if target_coupom.exists(products__pk=product) == False:
+                target_coupom.products.add(product)
+
+    target_coupom.save()
+
+    return target_coupom
+
+
+def delete_coupom(current_employee: Employee, target_coupom_id: int) -> None:
     if current_employee == None:
         raise UserNotFoundError
 
     if current_employee.user.is_staff == False:
         raise UserHasNoPermissionError
+
+    target_coupom = Coupom.objects.filter(pk=target_coupom_id)
+
+    if target_coupom.exists() == False:
+        raise CoupomNotFoundError
+    
+    target_coupom.delete()

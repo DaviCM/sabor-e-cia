@@ -1,5 +1,7 @@
 from rest_framework import serializers as se
 
+from core.models import Product
+
 class CreateCoupomSerializer(se.Serializer):
     id = se.IntegerField(read_only=True)
     token = se.CharField(max_length=50)
@@ -7,7 +9,9 @@ class CreateCoupomSerializer(se.Serializer):
     created_at = se.DateTimeField(allow_null=True)
     expires_at = se.DateTimeField()
 
-    products = se.ListField(child=se.IntegerField(allow_null=True))
+    # DRF fornece esse campo, que com many=True funciona como uma coleção das PKs dos produtos associados
+    # Em um ManyToManyField, que é o caso no banco de dados.
+    products = se.PrimaryKeyRelatedField(queryset=Product.objects.all(), many=True, allow_null=True)
 
 
 
@@ -17,7 +21,7 @@ class UpdateCoupomSerializer(se.Serializer):
     multiplier = se.DecimalField(allow_null=True)
     expires_at = se.DateTimeField(allow_null=True)
 
-    products = se.ListField(child=se.IntegerField(allow_null=True))
+    products = se.PrimaryKeyRelatedField(queryset=Product.objects.all(), many=True, allow_null=True)
 
 
 

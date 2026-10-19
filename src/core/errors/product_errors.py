@@ -11,5 +11,5 @@ class InvalidValueError(AppError):
 
 class ProductNotFoundError(AppError):
     status_code = status.HTTP_404_NOT_FOUND
-    error = "PRODUCT_NOT_fOUND"
+    error = "PRODUCT_NOT_FOUND"
     detail = "The requested product could not be found. Please, try again."

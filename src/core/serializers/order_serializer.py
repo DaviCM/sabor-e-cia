@@ -1,6 +1,6 @@
 from rest_framework import serializers as se
 
-from core.models import OrderStatus, OrderCategories, ProductTypes
+from core.models import Product, Coupom, OrderStatus, OrderCategories, ProductTypes
 
 STATUS = [(status.value, status.name) for status in OrderStatus]
 CATEGORIES = [(category.value, category.name) for category in OrderCategories]
@@ -19,8 +19,8 @@ class CreateOrderSerializer(se.Serializer):
     client_id = se.IntegerField()
     employee_id = se.IntegerField()
 
-    products = se.ListField(child=se.IntegerField())
-    coupoms = se.ListField(child=se.IntegerField(allow_null=True))
+    products = se.PrimaryKeyRelatedField(queryset=Product.objects.all(), many=True, allow_null=True)
+    coupoms = se.PrimaryKeyRelatedField(queryset=Coupom.objects.all(), many=True, allow_null=True)
 
 
 
@@ -39,7 +39,7 @@ class QueryOrderSerializer(se.Serializer):
     client_id = se.IntegerField(allow_null=True)
     employee_id = se.IntegerField(allow_null=True)
 
-    products = se.ListField(child=se.IntegerField(allow_null=True), allow_null=True)
+    products = se.PrimaryKeyRelatedField(queryset=Product.objects.all(), many=True, allow_null=True)
     product_types = se.ListField(child=se.ChoiceField(choices=TYPES, allow_null=True), allow_null=True)
 
-    coupoms = se.ListField(child=se.IntegerField(allow_null=True), allow_null=True)
+    coupoms = se.PrimaryKeyRelatedField(queryset=Coupom.objects.all(), many=True, allow_null=True)

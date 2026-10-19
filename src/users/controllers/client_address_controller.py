@@ -32,10 +32,10 @@ def list_client_addresses(current_client: Client):
 
     addresses = ClientAddress.objects.filter(client=current_client)
 
-    if addresses.exists() == True:
-        return addresses
-    else:
+    if addresses.exists() == False:
         raise AddressNotFoundError
+
+    return addresses
 
 
 def update_client_address(current_client: Client, params: UpdateAddressSerializer) -> ClientAddress:
@@ -48,7 +48,10 @@ def update_client_address(current_client: Client, params: UpdateAddressSerialize
     if params.number <= 0:
         raise InvalidNumberError
     
-    target_address: ClientAddress = ClientAddress.objects.filter(pk=params.id)
+    target_address = ClientAddress.objects.filter(pk=params.id)
+
+    if target_address.exists() == False:
+        raise AddressNotFoundError
     
     if params.cep != None:
         target_address.cep = params.cep
@@ -64,9 +67,14 @@ def update_client_address(current_client: Client, params: UpdateAddressSerialize
     return target_address
 
 
+
 def delete_client_address(current_client: Client, target_address_id: int) -> None:
     if current_client == None:
         raise UserNotFoundError
     
     target_address = ClientAddress.objects.filter(pk=target_address_id)
+
+    if target_address.exists() == False:
+        raise AddressNotFoundError
+
     target_address.delete()
