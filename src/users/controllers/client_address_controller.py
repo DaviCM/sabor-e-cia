@@ -6,7 +6,7 @@ from users.errors import *
 
 def create_client_address(current_client: Client, params: CreateAddressSerializer) -> ClientAddress:
     if current_client == None:
-        raise UserNotFoundError
+        raise ClientNotFoundError
     
     if is_valid_cep(params.cep) == False:
         raise InvalidCEPError
@@ -28,7 +28,7 @@ def create_client_address(current_client: Client, params: CreateAddressSerialize
 
 def list_client_addresses(current_client: Client):
     if current_client == None:
-        raise UserNotFoundError
+        raise ClientNotFoundError
 
     addresses = ClientAddress.objects.filter(client=current_client)
 
@@ -40,17 +40,17 @@ def list_client_addresses(current_client: Client):
 
 def update_client_address(current_client: Client, params: UpdateAddressSerializer) -> ClientAddress:
     if current_client == None:
-        raise UserNotFoundError
+        raise ClientNotFoundError
     
     if (params.cep != None) and (is_valid_cep(params.cep) == False):
         raise InvalidCEPError
     
     if params.number <= 0:
         raise InvalidNumberError
-    
-    target_address = ClientAddress.objects.filter(pk=params.id)
 
-    if target_address.exists() == False:
+    try:
+        target_address = ClientAddress.objects.get(pk=params.id)
+    except ClientAddress.DoesNotExist:
         raise AddressNotFoundError
     
     if params.cep != None:
@@ -70,11 +70,11 @@ def update_client_address(current_client: Client, params: UpdateAddressSerialize
 
 def delete_client_address(current_client: Client, target_address_id: int) -> None:
     if current_client == None:
-        raise UserNotFoundError
-    
-    target_address = ClientAddress.objects.filter(pk=target_address_id)
+        raise ClientNotFoundError
 
-    if target_address.exists() == False:
+    try:
+        target_address = ClientAddress.objects.get(pk=target_address_id)
+    except Client.DoesNotExist:
         raise AddressNotFoundError
 
     target_address.delete()

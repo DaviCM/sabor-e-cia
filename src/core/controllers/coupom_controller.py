@@ -2,11 +2,11 @@ from core.models import Coupom
 from core.serializers import CreateCoupomSerializer, UpdateCoupomSerializer, QueryCoupomSerializer
 from core.errors import InvalidMultiplierError, InvalidDateError, CoupomNotFoundError
 from users.models import Employee
-from users.errors import UserNotFoundError, UserHasNoPermissionError
+from users.errors import EmployeeNotFoundError, UserHasNoPermissionError
 
 def create_coupom(current_employee: Employee, params: CreateCoupomSerializer) -> Coupom:
     if current_employee == None:
-        raise UserNotFoundError
+        raise EmployeeNotFoundError
 
     if current_employee.user.is_staff == False:
         raise UserHasNoPermissionError
@@ -32,7 +32,7 @@ def create_coupom(current_employee: Employee, params: CreateCoupomSerializer) ->
 
 def list_coupoms(current_employee: Employee, params: QueryCoupomSerializer):
     if current_employee == None:
-        raise UserNotFoundError
+        raise EmployeeNotFoundError
 
     if current_employee.user.is_staff == False:
         raise UserHasNoPermissionError
@@ -85,7 +85,7 @@ def list_coupoms(current_employee: Employee, params: QueryCoupomSerializer):
 
 def update_coupom(current_employee: Employee, params: UpdateCoupomSerializer) -> Coupom:
     if current_employee == None:
-        raise UserNotFoundError
+        raise EmployeeNotFoundError
 
     if current_employee.user.is_staff == False:
         raise UserHasNoPermissionError
@@ -93,9 +93,9 @@ def update_coupom(current_employee: Employee, params: UpdateCoupomSerializer) ->
     if (params.multiplier != None) and (params.multiplier < 1):
         raise InvalidMultiplierError
 
-    target_coupom = Coupom.objects.filter(pk=params.id)
-
-    if target_coupom.exists == False:
+    try:
+        target_coupom = Coupom.objects.get(pk=params.id)
+    except Coupom.DoesNotExist:
         raise CoupomNotFoundError
 
     if (params.expires_at != None) and (target_coupom.created_at >= params.expires_at):
@@ -122,14 +122,14 @@ def update_coupom(current_employee: Employee, params: UpdateCoupomSerializer) ->
 
 def delete_coupom(current_employee: Employee, target_coupom_id: int) -> None:
     if current_employee == None:
-        raise UserNotFoundError
+        raise EmployeeNotFoundError
 
     if current_employee.user.is_staff == False:
         raise UserHasNoPermissionError
 
-    target_coupom = Coupom.objects.filter(pk=target_coupom_id)
-
-    if target_coupom.exists() == False:
+    try:
+        target_coupom = Coupom.objects.get(pk=target_coupom_id)
+    except Coupom.DoesNotExist:
         raise CoupomNotFoundError
     
     target_coupom.delete()

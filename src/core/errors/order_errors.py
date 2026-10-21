@@ -16,13 +16,6 @@ class InvalidQuantitiesError(AppError):
 
 
 
-class OrderAlreadyExistsError(AppError):
-    status_code = status.HTTP_400_BAD_REQUEST
-    error = "ORDER_ALREADY_EXISTS"
-    detail = "The provided order is already registered. Please, try again."
-
-
-
 class OrderNotFoundError(AppError):
     status_code = status.HTTP_404_NOT_FOUND
     error = "ORDER_NOT_FOUND"

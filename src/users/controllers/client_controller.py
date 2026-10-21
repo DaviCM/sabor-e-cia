@@ -36,7 +36,7 @@ def create_client(params: CreateClientSerializer) -> Client:
 
 def update_client(current_client: Client, params: UpdateClientSerializer) -> Client:
     if current_client == None:
-        raise UserNotFoundError
+        raise ClientNotFoundError
     
     if (params.email != None) and (is_valid_email(email=params.email) == False):
         raise InvalidEmailError
@@ -75,7 +75,7 @@ def update_client(current_client: Client, params: UpdateClientSerializer) -> Cli
 
 def delete_client(current_client: Client) -> None:
     if current_client == None:
-        raise UserNotFoundError
+        raise ClientNotFoundError
     
     current_user: User = current_client.user
     current_user.delete()

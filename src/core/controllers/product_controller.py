@@ -1,12 +1,12 @@
 from core.models import Product
 from core.serializers import CreateProductSerializer, UpdateProductSerializer, QueryProductSerializer
-from core.errors import InvalidValueError, ProductNotFoundError, InvalidQueryError
+from core.errors import InvalidValueError, ProductNotFoundError
 from users.models import Employee, User
-from users.errors import UserNotFoundError, UserHasNoPermissionError
+from users.errors import EmployeeNotFoundError, UserNotFoundError, UserHasNoPermissionError
 
 def create_product(current_employee: Employee, params: CreateProductSerializer) -> Product:
     if current_employee == None:
-        raise UserNotFoundError
+        raise EmployeeNotFoundError
 
     if current_employee.user.is_staff == False:
         raise UserHasNoPermissionError
@@ -54,14 +54,14 @@ def list_products(current_user: User, params: QueryProductSerializer):
 
 def update_product(current_employee: Employee, params: UpdateProductSerializer) -> Product:
     if current_employee == None:
-        raise UserNotFoundError
+        raise EmployeeNotFoundError
 
     if current_employee.user.is_staff == False:
         raise UserHasNoPermissionError
 
-    target_product = Product.objects.filter(pk=params.id)
-
-    if target_product.exists() == False:
+    try:
+        target_product = Product.objects.get(pk=params.id)
+    except Product.DoesNotExist:
         raise ProductNotFoundError
 
     if (params.value != None) and (params.value < 0):
@@ -81,16 +81,16 @@ def update_product(current_employee: Employee, params: UpdateProductSerializer) 
     return target_product
 
 
-def delete_product(current_employee: Employee, target_prouct_id: int) -> None:
+def delete_product(current_employee: Employee, target_product_id: int) -> None:
     if current_employee == None:
-        raise UserNotFoundError
+        raise EmployeeNotFoundError
 
     if current_employee.user.is_staff == False:
         raise UserHasNoPermissionError
-    
-    target_product = Product.objects.filter(pk=target_prouct_id)
 
-    if target_product.exists() == False:
+    try:
+        target_product = Product.objects.get(pk=target_product_id)
+    except Product.DoesNotExist:
         raise ProductNotFoundError
 
     target_product.delete()

@@ -44,10 +44,24 @@ class PhoneAlreadyExistsError(AppError):
     
     
 
+class EmployeeNotFoundError(AppError):
+    status_code = status.HTTP_404_NOT_FOUND
+    error = "EMPLOYEE_NOT_FOUND"
+    detail = "The requested employee could not be retrieved or signed in. Please, try again."
+
+
+
+class ClientNotFoundError(AppError):
+    status_code = status.HTTP_404_NOT_FOUND
+    error = "CLIENT_NOT_FOUND"
+    detail = "The requested client could not be retrieved or signed in. Please, try again."
+
+
+
 class UserNotFoundError(AppError):
     status_code = status.HTTP_404_NOT_FOUND
     error = "USER_NOT_FOUND"
-    detail = "The requested user could not be found. Please, try again."
+    detail = "The requested user could not be retrieved or signed in. Please, try again."
 
 
 

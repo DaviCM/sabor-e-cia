@@ -2,11 +2,11 @@ from core.models import Ingredient
 from core.serializers import CreateIngredientSerializer, UpdateIngredientSerializer, QueryIngredientSerializer
 from core.errors import InvalidQuantityError, IngredientNotFoundError
 from users.models import Employee
-from users.errors import UserNotFoundError, UserHasNoPermissionError
+from users.errors import EmployeeNotFoundError, UserHasNoPermissionError
 
 def create_ingredient(current_employee: Employee, params: CreateIngredientSerializer) -> Ingredient:
     if current_employee == None:
-        raise UserNotFoundError
+        raise EmployeeNotFoundError
 
     if current_employee.user.is_staff == False:
         raise UserHasNoPermissionError
@@ -28,7 +28,7 @@ def create_ingredient(current_employee: Employee, params: CreateIngredientSerial
  
 def list_ingredients(current_employee: Employee, params: QueryIngredientSerializer):
     if current_employee == None:
-        raise UserNotFoundError
+        raise EmployeeNotFoundError
 
     if current_employee.user.is_staff == False:
         raise UserHasNoPermissionError
@@ -68,7 +68,7 @@ def list_ingredients(current_employee: Employee, params: QueryIngredientSerializ
 
 def update_ingredient(current_employee: Employee, params: UpdateIngredientSerializer) -> Ingredient:
     if current_employee == None:
-        raise UserNotFoundError
+        raise EmployeeNotFoundError
 
     if current_employee.user.is_staff == False:
         raise UserHasNoPermissionError
@@ -76,9 +76,9 @@ def update_ingredient(current_employee: Employee, params: UpdateIngredientSerial
     if (params.quantity != None) and (params.quantity < 0):
         raise InvalidQuantityError
 
-    target_ingredient = Ingredient.objects.filter(pk=params.id)
-    
-    if target_ingredient.exists == False:
+    try:
+        target_ingredient = Ingredient.objects.get(pk=params.id)
+    except Ingredient.DoesNotExist:
         raise IngredientNotFoundError
 
     if params.description != None:
@@ -100,14 +100,14 @@ def update_ingredient(current_employee: Employee, params: UpdateIngredientSerial
 
 def delete_ingredient(current_employee: Employee, target_ingredient_id: int) -> None:
     if current_employee == None:
-        raise UserNotFoundError
+        raise EmployeeNotFoundError
 
     if current_employee.user.is_staff == False:
         raise UserHasNoPermissionError
 
-    target_ingredient = Ingredient.objects.filter(pk=target_ingredient_id)
-
-    if target_ingredient.exists() == False:
+    try:
+        target_ingredient = Ingredient.objects.get(pk=target_ingredient_id)
+    except Ingredient.DoesNotExist:
         raise IngredientNotFoundError
 
     target_ingredient.delete()

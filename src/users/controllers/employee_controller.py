@@ -40,15 +40,15 @@ def create_employee(params: CreateEmployeeSerializer) -> Employee:
 
 def update_employee(current_employee: Employee, params: UpdateEmployeeSerializer) -> Employee:
     if current_employee == None:
-        raise UserNotFoundError
+        raise EmployeeNotFoundError
 
     if current_employee.user.is_staff == False:
         raise UserHasNoPermissionError
 
-    target_employee = Employee.objects.filter(pk=params.id)
-
-    if target_employee == None:
-        raise UserNotFoundError
+    try:
+        target_employee = Employee.objects.get(pk=params.id)
+    except Employee.DoesNotExist:
+        raise EmployeeNotFoundError
     
     if current_employee.user.is_admin == False:
         raise UserHasNoPermissionError
@@ -97,12 +97,17 @@ def update_employee(current_employee: Employee, params: UpdateEmployeeSerializer
     return target_employee
             
 
-def delete_employee(current_employee: Employee) -> None:
+def delete_employee(current_employee: Employee, target_employee_id: int) -> None:
     if current_employee == None:
-        raise UserNotFoundError
+        raise EmployeeNotFoundError
 
     if current_employee.user.is_staff == False:
         raise UserHasNoPermissionError
+
+    try:
+        target_employee = Employee.objects.get(pk=target_employee_id)
+    except Employee.DoesNotExist:
+        raise EmployeeNotFoundError
     
     current_user: User = current_employee.user
     current_user.delete()

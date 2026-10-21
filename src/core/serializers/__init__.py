@@ -3,3 +3,4 @@ from coupom_serializer import *
 from ingredient_serializer import *
 from order_serializer import *
 from product_serializer import *
+from products_orders_serializer import *

@@ -8,5 +8,5 @@ class ProductsOrders(models.Model):
     product_type = models.CharField(max_length=120, choices=TYPES, null=False)
     is_combo = models.BooleanField(default=False, null=False)
 
-    product = models.ForeignKey(to="core.Product", on_delete=models.CASCADE, null=True)
-    order = models.ForeignKey(to="core.Order", on_delete=models.CASCADE, null=True)
+    product = models.ForeignKey(to="core.Product", on_delete=models.CASCADE)
+    order = models.ForeignKey(to="core.Order", on_delete=models.CASCADE)

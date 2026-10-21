@@ -1,6 +1,7 @@
 from rest_framework import serializers as se
 
-from core.models import Product, Coupom, OrderStatus, OrderCategories, ProductTypes
+from core.models import ProductsOrders, Coupom, OrderStatus, OrderCategories, ProductTypes
+from core.serializers import CreateProductOrderSerializer, QueryProductOrderSerializer
 
 STATUS = [(status.value, status.name) for status in OrderStatus]
 CATEGORIES = [(category.value, category.name) for category in OrderCategories]
@@ -19,7 +20,10 @@ class CreateOrderSerializer(se.Serializer):
     client_id = se.IntegerField()
     employee_id = se.IntegerField()
 
-    products = se.PrimaryKeyRelatedField(queryset=Product.objects.all(), many=True, allow_null=True)
+    # Crio uma referência ao modelo intermediário para salvar os produtos,
+    # assim tenho como enviar um POST body como campo do outro. 
+    products = CreateProductOrderSerializer(many=True)
+
     coupoms = se.PrimaryKeyRelatedField(queryset=Coupom.objects.all(), many=True, allow_null=True)
 
 
@@ -39,7 +43,12 @@ class QueryOrderSerializer(se.Serializer):
     client_id = se.IntegerField(allow_null=True)
     employee_id = se.IntegerField(allow_null=True)
 
-    products = se.PrimaryKeyRelatedField(queryset=Product.objects.all(), many=True, allow_null=True)
-    product_types = se.ListField(child=se.ChoiceField(choices=TYPES, allow_null=True), allow_null=True)
+    products = QueryProductOrderSerializer(many=True, allow_null=True)
 
     coupoms = se.PrimaryKeyRelatedField(queryset=Coupom.objects.all(), many=True, allow_null=True)
+
+
+
+class UpdateOrderStatusSerializer(se.Serializer):
+    id = se.IntegerField()
+    status = se.ChoiceField(STATUS)
