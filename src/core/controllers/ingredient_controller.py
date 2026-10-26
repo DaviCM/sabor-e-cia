@@ -1,24 +1,24 @@
+from typing import Any
 from core.models import Ingredient
-from core.serializers import CreateIngredientSerializer, UpdateIngredientSerializer, QueryIngredientSerializer
 from core.errors import InvalidQuantityError, IngredientNotFoundError
 from users.models import Employee
 from users.errors import EmployeeNotFoundError, UserHasNoPermissionError
 
-def create_ingredient(current_employee: Employee, params: CreateIngredientSerializer) -> Ingredient:
-    if current_employee == None:
+def create_ingredient(current_employee: Employee, params: dict[str, Any]) -> Ingredient:
+    if current_employee is None:
         raise EmployeeNotFoundError
 
-    if current_employee.user.is_staff == False:
+    if not current_employee.user.is_staff:
         raise UserHasNoPermissionError
 
-    if params.quantity < 0:
+    if params["quantity"] < 0:
         raise InvalidQuantityError
 
     new_ingredient = Ingredient(
-        description=params.description,
-        quantity=params.quantity,
-        unit=params.unit,
-        provider=params.provider
+        description=params["description"],
+        quantity=params["quantity"],
+        unit=params["unit"],
+        provider=params["provider"]
     )
 
     new_ingredient.save()
@@ -26,72 +26,79 @@ def create_ingredient(current_employee: Employee, params: CreateIngredientSerial
     return new_ingredient
 
  
-def list_ingredients(current_employee: Employee, params: QueryIngredientSerializer):
-    if current_employee == None:
+def list_ingredients(current_employee: Employee, params: dict[str, Any]):
+    if current_employee is None:
         raise EmployeeNotFoundError
 
-    if current_employee.user.is_staff == False:
+    if not current_employee.user.is_staff:
         raise UserHasNoPermissionError
 
-    if (params.minimum_quantity != None) and (params.maximum_quantity != None):
-        if params.minimum_quantity < 0:
-            raise InvalidQuantityError
+    minimum_quantity = params.get("minimum_quantity")
+    maximum_quantity = params.get("maximum_quantity")
 
-    if params.maximum_quantity < 0:
-        raise InvalidQuantityError
+    if (minimum_quantity is not None) and (maximum_quantity is not None):
+        if minimum_quantity < 0:
+            raise InvalidQuantityError
         
-    if params.minimum_quantity > params.maximum_quantity:
-        raise InvalidQuantityError
+        if minimum_quantity > maximum_quantity:
+            raise InvalidQuantityError
 
     ingredients = Ingredient.objects.all()
 
-    if params.description != None:
-        ingredients = ingredients.filter(description__icontains=params.description)
+    description = params.get("description")
+    if description is not None:
+        ingredients = ingredients.filter(description__icontains=description)
 
-    if params.minimum_quantity != None:
-        ingredients = ingredients.filter(quantity__gte=params.minimum_quantity)
+    if minimum_quantity is not None:
+        ingredients = ingredients.filter(quantity__gte=minimum_quantity)
 
-    if params.minimum_quantity != None:
-        ingredients = ingredients.filter(quantity__lte=params.maximum_quantity)
+    if maximum_quantity is not None:
+        ingredients = ingredients.filter(quantity__lte=maximum_quantity)
 
-    if params.unit != None:
-        ingredients = ingredients.filter(unit=params.unit)
+    unit = params.get("unit")
+    if unit is not None:
+        ingredients = ingredients.filter(unit=unit)
 
-    if params.provider != None:
-        ingredients = ingredients.filter(provider__icontains=params.provider)
+    provider = params.get("provider")
+    if provider is not None:
+        ingredients = ingredients.filter(provider__icontains=provider)
 
-    if ingredients.exists() == False:
+    if not ingredients.exists():
         raise IngredientNotFoundError
     
     return ingredients
 
 
-def update_ingredient(current_employee: Employee, params: UpdateIngredientSerializer) -> Ingredient:
-    if current_employee == None:
+def update_ingredient(current_employee: Employee, params: dict[str, Any]) -> Ingredient:
+    if current_employee is None:
         raise EmployeeNotFoundError
 
-    if current_employee.user.is_staff == False:
+    if not current_employee.user.is_staff:
         raise UserHasNoPermissionError
 
-    if (params.quantity != None) and (params.quantity < 0):
+    quantity = params.get("quantity")
+    if (quantity is not None) and (quantity < 0):
         raise InvalidQuantityError
 
     try:
-        target_ingredient = Ingredient.objects.get(pk=params.id)
+        target_ingredient = Ingredient.objects.get(pk=params["id"])
     except Ingredient.DoesNotExist:
         raise IngredientNotFoundError
 
-    if params.description != None:
-        target_ingredient.description = params.description
+    description = params.get("description")
+    if description is not None:
+        target_ingredient.description = description
 
-    if params.quantity != None:
-        target_ingredient.quantity = params.quantity
+    if quantity is not None:
+        target_ingredient.quantity = quantity
 
-    if params.unit != None:
-        target_ingredient.unit = params.unit
+    unit = params.get("unit")
+    if unit is not None:
+        target_ingredient.unit = unit
 
-    if params.provider != None:
-        target_ingredient.provider = params.provider
+    provider = params.get("provider")
+    if provider is not None:
+        target_ingredient.provider = provider
 
     target_ingredient.save()
 
@@ -99,10 +106,10 @@ def update_ingredient(current_employee: Employee, params: UpdateIngredientSerial
 
 
 def delete_ingredient(current_employee: Employee, target_ingredient_id: int) -> None:
-    if current_employee == None:
+    if current_employee is None:
         raise EmployeeNotFoundError
 
-    if current_employee.user.is_staff == False:
+    if not current_employee.user.is_staff:
         raise UserHasNoPermissionError
 
     try:

@@ -1,24 +1,29 @@
+from typing import Any
 from brutils import is_valid_cep
 
 from users.models import Client, ClientAddress
-from users.serializers import CreateAddressSerializer, UpdateAddressSerializer
-from users.errors import *
+from users.errors import (
+    ClientNotFoundError,
+    InvalidCEPError,
+    InvalidNumberError,
+    AddressNotFoundError,
+)
 
-def create_client_address(current_client: Client, params: CreateAddressSerializer) -> ClientAddress:
-    if current_client == None:
+def create_client_address(current_client: Client, params: dict[str, Any]) -> ClientAddress:
+    if current_client is None:
         raise ClientNotFoundError
     
-    if is_valid_cep(params.cep) == False:
+    if not is_valid_cep(params["cep"]):
         raise InvalidCEPError
     
-    if params.number <= 0:
+    if params["number"] <= 0:
         raise InvalidNumberError
     
     new_address = ClientAddress(
-        cep=params.cep,
-        description=params.description,
-        numbers=params.number,
-        creator=current_client
+        cep=params["cep"],
+        description=params["description"],
+        number=params["number"],
+        client=current_client,
     )
     
     new_address.save()
@@ -27,54 +32,56 @@ def create_client_address(current_client: Client, params: CreateAddressSerialize
 
 
 def list_client_addresses(current_client: Client):
-    if current_client == None:
+    if current_client is None:
         raise ClientNotFoundError
 
     addresses = ClientAddress.objects.filter(client=current_client)
 
-    if addresses.exists() == False:
+    if not addresses.exists():
         raise AddressNotFoundError
 
     return addresses
 
 
-def update_client_address(current_client: Client, params: UpdateAddressSerializer) -> ClientAddress:
-    if current_client == None:
+def update_client_address(current_client: Client, params: dict[str, Any]) -> ClientAddress:
+    if current_client is None:
         raise ClientNotFoundError
     
-    if (params.cep != None) and (is_valid_cep(params.cep) == False):
+    cep = params.get("cep")
+    if (cep is not None) and not is_valid_cep(cep):
         raise InvalidCEPError
     
-    if params.number <= 0:
+    number = params.get("number")
+    if (number is not None) and (number <= 0):
         raise InvalidNumberError
 
     try:
-        target_address = ClientAddress.objects.get(pk=params.id)
+        target_address = ClientAddress.objects.get(pk=params["id"], client=current_client)
     except ClientAddress.DoesNotExist:
         raise AddressNotFoundError
     
-    if params.cep != None:
-        target_address.cep = params.cep
+    if cep is not None:
+        target_address.cep = cep
     
-    if params.description != None:
-        target_address.description = params.description
+    description = params.get("description")
+    if description is not None:
+        target_address.description = description
     
-    if params.number != None:
-        target_address.number = params.number
+    if number is not None:
+        target_address.number = number
         
     target_address.save()
     
     return target_address
 
 
-
 def delete_client_address(current_client: Client, target_address_id: int) -> None:
-    if current_client == None:
+    if current_client is None:
         raise ClientNotFoundError
 
     try:
-        target_address = ClientAddress.objects.get(pk=target_address_id)
-    except Client.DoesNotExist:
+        target_address = ClientAddress.objects.get(pk=target_address_id, client=current_client)
+    except ClientAddress.DoesNotExist:
         raise AddressNotFoundError
 
     target_address.delete()

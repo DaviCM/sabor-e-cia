@@ -9,7 +9,7 @@ class InvalidMultiplierError(AppError):
 
 
 
-class InvalidDateError(AppError):
+class InvalidCoupomDateError(AppError):
     status_code = status.HTTP_400_BAD_REQUEST
     error = "INVALID_DATE"
     detail = "The provided expiration date is lower than the creation date. Please, try again"

@@ -16,6 +16,13 @@ class InvalidQuantitiesError(AppError):
 
 
 
+class InvalidOrderDateError(AppError):
+    status_code = status.HTTP_400_BAD_REQUEST
+    error = "INVALID_ORDER_DATE"
+    detail = "The quantity for one or more products within this order is invalid. Please, try again."
+
+
+
 class OrderNotFoundError(AppError):
     status_code = status.HTTP_404_NOT_FOUND
     error = "ORDER_NOT_FOUND"

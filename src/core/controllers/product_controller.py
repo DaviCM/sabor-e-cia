@@ -1,23 +1,23 @@
+from typing import Any
 from core.models import Product
-from core.serializers import CreateProductSerializer, UpdateProductSerializer, QueryProductSerializer
 from core.errors import InvalidValueError, ProductNotFoundError
 from users.models import Employee, User
 from users.errors import EmployeeNotFoundError, UserNotFoundError, UserHasNoPermissionError
 
-def create_product(current_employee: Employee, params: CreateProductSerializer) -> Product:
-    if current_employee == None:
+def create_product(current_employee: Employee, params: dict[str, Any]) -> Product:
+    if current_employee is None:
         raise EmployeeNotFoundError
 
-    if current_employee.user.is_staff == False:
+    if not current_employee.user.is_staff:
         raise UserHasNoPermissionError
 
-    if params.value < 0:
+    if params["value"] < 0:
         raise InvalidValueError
 
     new_product = Product(
-        description=params.description,
-        category=params.category,
-        value=params.value
+        description=params["description"],
+        category=params["category"],
+        value=params["value"]
     )
 
     new_product.save()
@@ -25,56 +25,65 @@ def create_product(current_employee: Employee, params: CreateProductSerializer) 
     return new_product
 
 
-def list_products(current_user: User, params: QueryProductSerializer):
-    if current_user == None:
+def list_products(current_user: User, params: dict[str, Any]):
+    if current_user is None:
         raise UserNotFoundError
 
-    if params.minimum_value > params.maximum_value:
-        raise InvalidValueError
+    minimum_value = params.get("minimum_value")
+    maximum_value = params.get("maximum_value")
+
+    if (minimum_value is not None) and (maximum_value is not None):
+        if minimum_value > maximum_value:
+            raise InvalidValueError
 
     products = Product.objects.all()
 
-    if params.description != None:
-        products = products.filter(description__icontains=params.description)
+    description = params.get("description")
+    if description is not None:
+        products = products.filter(description__icontains=description)
 
-    if params.category != None:
-        products = products.filter(category=params.category)
+    category = params.get("category")
+    if category is not None:
+        products = products.filter(category=category)
 
-    if params.minimum_value != None:
-        products = products.filter(value__gte=params.minimum_value)
+    if minimum_value is not None:
+        products = products.filter(value__gte=minimum_value)
 
-    if params.maximum_value != None:
-        products = products.filter(value__lte=params.maximum_value)
+    if maximum_value is not None:
+        products = products.filter(value__lte=maximum_value)
 
-    if products.exists() == False:
+    if not products.exists():
         raise ProductNotFoundError
 
     return products
 
 
-def update_product(current_employee: Employee, params: UpdateProductSerializer) -> Product:
-    if current_employee == None:
+def update_product(current_employee: Employee, params: dict[str, Any]) -> Product:
+    if current_employee is None:
         raise EmployeeNotFoundError
 
-    if current_employee.user.is_staff == False:
+    if not current_employee.user.is_staff:
         raise UserHasNoPermissionError
 
     try:
-        target_product = Product.objects.get(pk=params.id)
+        target_product = Product.objects.get(pk=params["id"])
     except Product.DoesNotExist:
         raise ProductNotFoundError
 
-    if (params.value != None) and (params.value < 0):
+    value = params.get("value")
+    if (value is not None) and (value < 0):
         raise InvalidValueError
 
-    if params.description != None:
-        target_product.description = params.description
+    description = params.get("description")
+    if description is not None:
+        target_product.description = description
 
-    if params.category != None:
-        target_product.category = params.category
+    category = params.get("category")
+    if category is not None:
+        target_product.category = category
 
-    if params.value != None:
-        target_product.value = params.value
+    if value is not None:
+        target_product.value = value
 
     target_product.save()
 
@@ -82,10 +91,10 @@ def update_product(current_employee: Employee, params: UpdateProductSerializer) 
 
 
 def delete_product(current_employee: Employee, target_product_id: int) -> None:
-    if current_employee == None:
+    if current_employee is None:
         raise EmployeeNotFoundError
 
-    if current_employee.user.is_staff == False:
+    if not current_employee.user.is_staff:
         raise UserHasNoPermissionError
 
     try:

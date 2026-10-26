@@ -35,7 +35,7 @@ class QueryOrderSerializer(se.Serializer):
     minimum_quantity = se.IntegerField(allow_null=True)
     maximum_quantity = se.IntegerField(allow_null=True)
     minimum_value = se.DecimalField(allow_null=True)
-    minimum_value = se.DecimalField(allow_null=True)
+    maximum_value = se.DecimalField(allow_null=True)
     category = se.ChoiceField(choices=CATEGORIES,allow_null=True)
     status = se.ChoiceField(choices=STATUS, allow_null=True)
     notes = se.CharField(max_length=255, allow_null=True)
