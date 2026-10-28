@@ -1,3 +1,5 @@
+from typing import Any
+
 from core.models import Ingredient
 from core.serializers import CreateIngredientSerializer, UpdateIngredientSerializer, QueryIngredientSerializer
 from core.errors import InvalidQuantityError, IngredientNotFoundError

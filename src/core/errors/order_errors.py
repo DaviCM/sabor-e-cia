@@ -9,10 +9,18 @@ class InvalidTotalValueError(AppError):
 
 
 
+
 class InvalidQuantitiesError(AppError):
     status_code = status.HTTP_400_BAD_REQUEST
     error = "INVALID_QUANTITIES"
     detail = "The quantity for one or more products within this order is invalid. Please, try again."
+
+
+
+class InvalidOrderDateError(AppError):
+    status_code = status.HTTP_400_BAD_REQUEST
+    error = "INVALID_ORDER_DATE"
+    detail = "The provided date range for this order is invalid. Please, try again."
 
 
 

@@ -1,3 +1,5 @@
+from typing import Any
+
 from core.models import Coupom
 from core.serializers import CreateCoupomSerializer, UpdateCoupomSerializer, QueryCoupomSerializer
 from core.errors import InvalidMultiplierError, InvalidDateError, CoupomNotFoundError

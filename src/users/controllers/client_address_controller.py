@@ -1,23 +1,29 @@
+from typing import Any
+
 from brutils import is_valid_cep
 
 from users.models import Client, ClientAddress
 from users.serializers import CreateAddressSerializer, UpdateAddressSerializer
 from users.errors import *
 
-def create_client_address(current_client: Client, params: CreateAddressSerializer) -> ClientAddress:
+def create_client_address(current_client: Client, params: dict[str, Any]) -> ClientAddress:
     if current_client == None:
         raise ClientNotFoundError
+
+    description = params.get("description")
+    number = params.get("number")
+    cep = params.get("cep")
     
-    if is_valid_cep(params.cep) == False:
+    if is_valid_cep(cep) == False:
         raise InvalidCEPError
     
-    if params.number <= 0:
+    if number <= 0:
         raise InvalidNumberError
     
     new_address = ClientAddress(
-        cep=params.cep,
-        description=params.description,
-        numbers=params.number,
+        cep=cep,
+        description=description,
+        number=number,
         creator=current_client
     )
     
@@ -38,29 +44,34 @@ def list_client_addresses(current_client: Client):
     return addresses
 
 
-def update_client_address(current_client: Client, params: UpdateAddressSerializer) -> ClientAddress:
+def update_client_address(current_client: Client, params: dict[str, Any]) -> ClientAddress:
     if current_client == None:
         raise ClientNotFoundError
+
+    id = params.get("id")
+    description = params.get("description")
+    number = params.get("number")
+    cep = params.get("cep")
     
-    if (params.cep != None) and (is_valid_cep(params.cep) == False):
+    if (cep != None) and (is_valid_cep(cep) == False):
         raise InvalidCEPError
     
-    if params.number <= 0:
+    if number <= 0:
         raise InvalidNumberError
 
     try:
-        target_address = ClientAddress.objects.get(pk=params.id)
+        target_address = ClientAddress.objects.get(pk=id)
     except ClientAddress.DoesNotExist:
         raise AddressNotFoundError
     
-    if params.cep != None:
-        target_address.cep = params.cep
+    if cep != None:
+        target_address.cep = cep
     
-    if params.description != None:
-        target_address.description = params.description
+    if description != None:
+        target_address.description = description
     
-    if params.number != None:
-        target_address.number = params.number
+    if number != None:
+        target_address.number = number
         
     target_address.save()
     
