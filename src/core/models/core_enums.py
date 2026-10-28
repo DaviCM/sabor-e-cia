@@ -2,7 +2,7 @@ from enum import Enum, verify, UNIQUE
 
 @verify(UNIQUE)
 class OrderCategories(Enum):
-    DELVERY = "delivery"
+    DELIVERY = "delivery"
     PHONE = "phone"
     LOCAL = "local"
 

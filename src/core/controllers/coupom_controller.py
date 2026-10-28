@@ -24,7 +24,6 @@ def create_coupom(current_employee: Employee, params: dict[str, Any]) -> Coupom:
 
     if params.get("products") is not None:
         for product in params["products"]:
-            # add() adiciona uma entrada a um relacionamento many-to-many.
             new_coupom.products.add(product)
 
     return new_coupom
@@ -50,12 +49,16 @@ def list_coupoms(current_employee: Employee, params: dict[str, Any]):
     if (maximum_multiplier is not None) and (maximum_multiplier < 1):
         raise InvalidMultiplierError
 
+    if (minimum_multiplier is not None) and (maximum_multiplier is not None):
+        if minimum_multiplier > maximum_multiplier:
+            raise InvalidMultiplierError
+
     if (created_before is not None) and (created_after is not None):
-        if created_after < created_before:
+        if created_after > created_before:
             raise InvalidCoupomDateError
             
     if (expires_before is not None) and (expires_after is not None):
-        if expires_after < expires_before:
+        if expires_after > expires_before:
             raise InvalidCoupomDateError
     
     coupoms = Coupom.objects.all()
@@ -71,16 +74,16 @@ def list_coupoms(current_employee: Employee, params: dict[str, Any]):
         coupoms = coupoms.filter(multiplier__lte=maximum_multiplier)
 
     if created_before is not None:
-        coupoms = coupoms.filter(created_at__gte=created_before)
+        coupoms = coupoms.filter(created_at__lte=created_before)
 
     if created_after is not None:
-        coupoms = coupoms.filter(created_at__lte=created_after)
+        coupoms = coupoms.filter(created_at__gte=created_after)
 
     if expires_before is not None:
-        coupoms = coupoms.filter(expires_at__gte=expires_before)
+        coupoms = coupoms.filter(expires_at__lte=expires_before)
 
     if expires_after is not None:
-        coupoms = coupoms.filter(expires_at__lte=expires_after)
+        coupoms = coupoms.filter(expires_at__gte=expires_after)
 
     product_id = params.get("product_id")
     if product_id is not None:

@@ -24,6 +24,12 @@ def create_employee(params: dict[str, Any]) -> Employee:
     
     if cpf_already_exists(params["cpf"]):
         raise UserAlreadyExistsError
+
+    role = params["role"]
+    valid_roles = [r.value for r in Roles]
+    if role not in valid_roles and role not in Roles:
+        raise InvalidRoleError
+    role_val = role.value if isinstance(role, Roles) else role
     
     created_user = User.objects.create_user(
         username=params["username"],
@@ -37,7 +43,7 @@ def create_employee(params: dict[str, Any]) -> Employee:
     new_employee = Employee(
         user=created_user,
         cpf=params["cpf"],
-        role=params["role"],
+        role=role_val,
     )
     new_employee.save()
     
@@ -120,6 +126,10 @@ def delete_employee(current_employee: Employee, target_employee_id: int) -> None
     if not current_employee.user.is_staff:
         raise UserHasNoPermissionError
 
+    is_admin = getattr(current_employee.user, "is_admin", current_employee.user.is_superuser)
+    if not is_admin:
+        raise UserHasNoPermissionError
+
     try:
         target_employee = Employee.objects.get(pk=target_employee_id)
     except Employee.DoesNotExist:
@@ -127,5 +137,3 @@ def delete_employee(current_employee: Employee, target_employee_id: int) -> None
     
     target_user: User = target_employee.user
     target_user.delete()
-    
-

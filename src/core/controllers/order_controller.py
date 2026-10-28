@@ -1,6 +1,12 @@
 from typing import Any
-from core.models import Order, ProductsOrders
-from core.errors import OrderNotFoundError, InvalidValueError, InvalidTotalValueError, InvalidOrderDateError, InvalidQuantitiesError
+from core.models import Order, ProductsOrders, OrderCategories, OrderStatus
+from core.errors import (
+    OrderNotFoundError,
+    InvalidValueError,
+    InvalidTotalValueError,
+    InvalidOrderDateError,
+    InvalidQuantitiesError,
+)
 from users.models import Client, Employee
 from users.errors import ClientNotFoundError, EmployeeNotFoundError, UserHasNoPermissionError
 
@@ -24,11 +30,19 @@ def create_order(current_client: Client, current_employee: Employee, params: dic
     if (cover is not None) and (cover < 0):
         raise InvalidValueError
 
+    category = params["category"]
+    if isinstance(category, OrderCategories):
+        category = category.value
+
+    status = params["status"]
+    if isinstance(status, OrderStatus):
+        status = status.value
+
     new_order = Order(
         quantity=params["quantity"],
         total_value=params["total_value"],
-        category=params["category"],
-        status=params["status"],
+        category=category,
+        status=status,
         cover=cover,
         notes=params.get("notes"),
 
@@ -72,15 +86,31 @@ def client_list_orders(current_client: Client, params: dict[str, Any] | Any):
         if minimum_date > maximum_date:
             raise InvalidOrderDateError
 
+    if (minimum_quantity is not None) and (minimum_quantity < 0):
+        raise InvalidQuantitiesError
+
+    if (maximum_quantity is not None) and (maximum_quantity < 0):
+        raise InvalidQuantitiesError
+
     if (minimum_quantity is not None) and (maximum_quantity is not None):
         if minimum_quantity > maximum_quantity:
             raise InvalidQuantitiesError
+
+    if (minimum_value is not None) and (minimum_value < 0):
+        raise InvalidValueError
+
+    if (maximum_value is not None) and (maximum_value < 0):
+        raise InvalidValueError
 
     if (minimum_value is not None) and (maximum_value is not None):
         if minimum_value > maximum_value:
             raise InvalidValueError
 
     orders = Order.objects.filter(client=current_client)
+
+    order_id = data.get("id")
+    if order_id is not None:
+        orders = orders.filter(pk=order_id)
 
     if minimum_date is not None:
         orders = orders.filter(datetime__gte=minimum_date)
@@ -102,11 +132,13 @@ def client_list_orders(current_client: Client, params: dict[str, Any] | Any):
 
     category = data.get("category")
     if category is not None:
-        orders = orders.filter(category=category)
+        cat_val = category.value if isinstance(category, OrderCategories) else category
+        orders = orders.filter(category=cat_val)
 
     status = data.get("status")
     if status is not None:
-        orders = orders.filter(status=status)
+        st_val = status.value if isinstance(status, OrderStatus) else status
+        orders = orders.filter(status=st_val)
 
     notes = data.get("notes")
     if notes is not None:
@@ -129,6 +161,9 @@ def client_list_orders(current_client: Client, params: dict[str, Any] | Any):
         for related_coupom in coupoms:
             c_id = related_coupom.pk if hasattr(related_coupom, "pk") else related_coupom
             orders = orders.filter(coupoms__pk=c_id)
+
+    if not orders.exists():
+        raise OrderNotFoundError
 
     return orders
 
@@ -153,15 +188,31 @@ def employee_list_orders(current_employee: Employee, params: dict[str, Any] | An
         if minimum_date > maximum_date:
             raise InvalidOrderDateError
 
+    if (minimum_quantity is not None) and (minimum_quantity < 0):
+        raise InvalidQuantitiesError
+
+    if (maximum_quantity is not None) and (maximum_quantity < 0):
+        raise InvalidQuantitiesError
+
     if (minimum_quantity is not None) and (maximum_quantity is not None):
         if minimum_quantity > maximum_quantity:
             raise InvalidQuantitiesError
+
+    if (minimum_value is not None) and (minimum_value < 0):
+        raise InvalidValueError
+
+    if (maximum_value is not None) and (maximum_value < 0):
+        raise InvalidValueError
 
     if (minimum_value is not None) and (maximum_value is not None):
         if minimum_value > maximum_value:
             raise InvalidValueError
 
     orders = Order.objects.all()
+
+    order_id = data.get("id")
+    if order_id is not None:
+        orders = orders.filter(pk=order_id)
 
     client_id = data.get("client_id")
     if client_id is not None:
@@ -191,15 +242,38 @@ def employee_list_orders(current_employee: Employee, params: dict[str, Any] | An
 
     category = data.get("category")
     if category is not None:
-        orders = orders.filter(category=category)
+        cat_val = category.value if isinstance(category, OrderCategories) else category
+        orders = orders.filter(category=cat_val)
 
     status = data.get("status")
     if status is not None:
-        orders = orders.filter(status=status)
+        st_val = status.value if isinstance(status, OrderStatus) else status
+        orders = orders.filter(status=st_val)
 
     notes = data.get("notes")
     if notes is not None:
         orders = orders.filter(notes__icontains=notes)
+
+    products = data.get("products")
+    if products is not None:
+        for related_product in products:
+            product_list = related_product.get("product", [])
+            if isinstance(product_list, list):
+                for product_item in product_list:
+                    p_id = product_item.pk if hasattr(product_item, "pk") else product_item
+                    orders = orders.filter(products__pk=p_id)
+            else:
+                p_id = product_list.pk if hasattr(product_list, "pk") else product_list
+                orders = orders.filter(products__pk=p_id)
+
+    coupoms = data.get("coupoms")
+    if coupoms is not None:
+        for related_coupom in coupoms:
+            c_id = related_coupom.pk if hasattr(related_coupom, "pk") else related_coupom
+            orders = orders.filter(coupoms__pk=c_id)
+
+    if not orders.exists():
+        raise OrderNotFoundError
 
     return orders
 
@@ -216,7 +290,8 @@ def update_order_status(current_employee: Employee, params: dict[str, Any]) -> O
     except Order.DoesNotExist:
         raise OrderNotFoundError
 
-    target_order.status = params["status"]
+    status = params["status"]
+    target_order.status = status.value if isinstance(status, OrderStatus) else status
     target_order.save()
 
     return target_order
