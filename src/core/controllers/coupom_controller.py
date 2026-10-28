@@ -6,7 +6,7 @@ from core.errors import InvalidMultiplierError, InvalidDateError, CoupomNotFound
 from users.models import Employee
 from users.errors import EmployeeNotFoundError, UserHasNoPermissionError
 
-def create_coupom(current_employee: Employee, params: CreateCoupomSerializer) -> Coupom:
+def create_coupom(current_employee: Employee, params: dict[str, Any]) -> Coupom:
     if current_employee == None:
         raise EmployeeNotFoundError
 
@@ -32,7 +32,7 @@ def create_coupom(current_employee: Employee, params: CreateCoupomSerializer) ->
     return new_coupom
 
 
-def list_coupoms(current_employee: Employee, params: QueryCoupomSerializer):
+def list_coupoms(current_employee: Employee, params: dict[str, Any]):
     if current_employee == None:
         raise EmployeeNotFoundError
 
@@ -85,7 +85,7 @@ def list_coupoms(current_employee: Employee, params: QueryCoupomSerializer):
     return coupoms
 
 
-def update_coupom(current_employee: Employee, params: UpdateCoupomSerializer) -> Coupom:
+def update_coupom(current_employee: Employee, params: dict[str, Any]) -> Coupom:
     if current_employee == None:
         raise EmployeeNotFoundError
 
